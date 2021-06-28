@@ -1,5 +1,5 @@
 class RecipesController < ApplicationController
-  before_action :set_recipe, only: [:show, :update]
+  before_action :set_recipe, only: [:show]
 
   def index
     recipes = Recipe.select("id",
@@ -19,7 +19,7 @@ class RecipesController < ApplicationController
   def create
     recipe = Recipe.new(recipe_params)
     if recipe.save
-      render json: { message: 'Recipe successfully created!', recipe: recipe }
+      render json: { message: 'Recipe successfully created!', recipe: [recipe] }
     else
       render json: { message: 'Recipe creation failed!', required: "title, making_time, serves, ingredients, cost" }
     end
@@ -36,15 +36,11 @@ class RecipesController < ApplicationController
   end
 
   def update
-    recipe = Recipe.select(
-                            "title",
-                            "making_time",
-                            "serves",
-                            "ingredients",
-                            "cost"
-                          ).find(params[:id])
-    if @recipe.update(recipe_params)
-      render json: { message: 'Recipe successfully updated!', recipe: recipe }
+    recipe = Recipe.find(params[:id])
+    if recipe.update(recipe_params)
+      # WARNING: 先にシリアライザーを宣言しておかないと帰ってくるJSONの中に "serializer": {} というbodyが入ってしまう
+      recipe_serializer = RecipeSerializer.new(recipe, serializer: RecipeSerializer )
+      render json: { message: 'Recipe successfully updated!', recipe: [recipe_serializer] }
     else
       render json: { message: 'Recipe updating failed!', required: "title, making_time, serves, ingredients, cost" }
     end
