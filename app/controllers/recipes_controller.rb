@@ -17,10 +17,14 @@ class RecipesController < ApplicationController
   end
 
   def create
-    recipe = Recipe.new(recipe_params)
-    if recipe.save
-      render json: { message: 'Recipe successfully created!', recipe: [recipe] }
-    else
+    begin
+      recipe = Recipe.new(recipe_params)
+      if recipe.save
+        render json: { message: 'Recipe successfully created!', recipe: [recipe] }
+      else
+        render json: { message: 'Recipe creation failed!', required: "title, making_time, serves, ingredients, cost" }
+      end
+    rescue => e
       render json: { message: 'Recipe creation failed!', required: "title, making_time, serves, ingredients, cost" }
     end
   end
